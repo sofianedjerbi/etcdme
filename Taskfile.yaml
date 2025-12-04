@@ -1,17 +1,7 @@
 version: '3'
 
-vars:
-  HETZNER_IP:
-    sh: echo ${HETZNER_IP}
-  TALOS_VERSION:
-    sh: echo ${TALOS_VERSION}
-
 includes:
-  local: ./tasks/local/Taskfile.yaml
-  hetzner: ./tasks/hetzner/Taskfile.yaml
-  infra: ./tasks/infra/Taskfile.yaml
   tg: ./tasks/terragrunt/Taskfile.yaml
-  k8s: ./tasks/kubernetes/Taskfile.yaml
 
 tasks:
   default:
