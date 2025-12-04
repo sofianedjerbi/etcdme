@@ -1,0 +1,25 @@
+# Environment-specific cert-manager ClusterIssuer configuration
+# All secrets are in secrets.sops.yaml (route53-credentials)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: contact@sofianedjerbi.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - dns01:
+          route53:
+            region: eu-west-3
+            hostedZoneIDSecretRef:
+              name: route53-credentials
+              key: hosted-zone-id
+            accessKeyIDSecretRef:
+              name: route53-credentials
+              key: access-key-id
+            secretAccessKeySecretRef:
+              name: route53-credentials
+              key: secret-access-key

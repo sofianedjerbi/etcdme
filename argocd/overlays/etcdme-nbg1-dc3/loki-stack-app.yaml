@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: 2.10.3
+    helm:
+      valuesObject:
+        loki:
+          persistence:
+            enabled: false
+        promtail:
+          enabled: true
+        grafana:
+          enabled: true
+          admin:
+            existingSecret: grafana-admin
+            userKey: admin-user
+            passwordKey: admin-password
+          sidecar:
+            datasources:
+              enabled: true
+          persistence:
+            enabled: false
+          additionalDataSources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-server.monitoring.svc.cluster.local
+              access: proxy
+              isDefault: true
+          grafana.ini:
+            server:
+              root_url: https://loki.etcd.me
+            auth.generic_oauth:
+              enabled: true
+              name: Keycloak
+              allow_sign_up: true
+              client_id: grafana
+              client_secret: ${GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+              scopes: openid email profile
+              auth_url: https://auth.etcd.me/realms/homelab/protocol/openid-connect/auth
+              token_url: https://auth.etcd.me/realms/homelab/protocol/openid-connect/token
+              api_url: https://auth.etcd.me/realms/homelab/protocol/openid-connect/userinfo
+              role_attribute_path: contains(realm_access.roles[*], 'admin') && 'Admin' || 'Viewer'
+          envFromSecret: grafana-oauth
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged

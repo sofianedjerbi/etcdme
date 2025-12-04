@@ -1,0 +1,58 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Run terragrunt command
+    summary: |
+      Usage:
+        task tg -- stack generate live/etcdme
+        task tg -- stack run plan live/etcdme
+        task tg -- stack run apply live/etcdme
+        task tg -- run-all apply live/etcdme/.terragrunt-stack/network
+    cmds:
+      - |
+        ARGS="{{.CLI_ARGS}}"
+        DIR="${ARGS##* }"
+        CMD="${ARGS% *}"
+
+        if [ -z "$ARGS" ] || [ "$CMD" = "$ARGS" ]; then
+          echo "Usage: task tg -- <terragrunt args> <dir>"
+          echo ""
+          echo "Examples:"
+          echo "  task tg -- stack generate live/etcdme"
+          echo "  task tg -- stack run plan live/etcdme"
+          echo "  task tg -- stack run apply live/etcdme"
+          exit 1
+        fi
+
+        cd "terraform/$DIR" && terragrunt $CMD
+
+  bootstrap:
+    desc: Bootstrap S3 backend for Terraform state
+    cmds:
+      - |
+        echo "Bootstrapping S3 backend..."
+
+        if aws s3api head-bucket --bucket "${TF_STATE_BUCKET}" 2>/dev/null; then
+          echo "✓ Bucket already exists."
+        else
+          aws s3api create-bucket \
+            --bucket "${TF_STATE_BUCKET}" \
+            --region "${AWS_REGION}" \
+            $(if [ "${AWS_REGION}" != "us-east-1" ]; then echo "--create-bucket-configuration LocationConstraint=${AWS_REGION}"; fi)
+        fi
+
+        aws s3api put-bucket-versioning --bucket "${TF_STATE_BUCKET}" --versioning-configuration Status=Enabled
+        aws s3api put-bucket-encryption --bucket "${TF_STATE_BUCKET}" --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+        aws s3api put-public-access-block --bucket "${TF_STATE_BUCKET}" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+        echo "✅ Bootstrap complete!"
+
+  clean:
+    desc: Clear terragrunt cache
+    cmds:
+      - |
+        echo "Cleaning terragrunt caches..."
+        find terraform -type d -name ".terragrunt-cache" -exec rm -rf {} + 2>/dev/null || true
+        find terraform -type d -name ".terragrunt-stack" -exec rm -rf {} + 2>/dev/null || true
+        echo "✓ Caches cleared"

@@ -1,0 +1,68 @@
+version: '3'
+
+tasks:
+  ssh:
+    desc: Connect to Hetzner server
+    cmds:
+      - ssh root@{{.HETZNER_IP}}
+
+  install-talos:
+    desc: Install Talos on Hetzner server via SSH (run in rescue mode)
+    cmds:
+      - bash ./tasks/hetzner/install-talos.sh {{.HETZNER_IP}} {{.TALOS_VERSION}}
+
+  apply-config:
+    desc: Apply Talos config to server
+    cmds:
+      - talosctl apply-config --insecure --nodes {{.HETZNER_IP}} --file talos/controlplane.yaml
+
+  bootstrap:
+    desc: Bootstrap Kubernetes on Talos
+    cmds:
+      - talosctl --talosconfig=talos/talosconfig config endpoint {{.HETZNER_IP}}
+      - talosctl --talosconfig=talos/talosconfig config node {{.HETZNER_IP}}
+      - talosctl --talosconfig=talos/talosconfig --nodes {{.HETZNER_IP}} bootstrap
+
+  kubeconfig:
+    desc: Refresh kubeconfig from Talos cluster
+    cmds:
+      - "{{.ROOT_DIR}}/terraform/modules/cluster/scripts/refresh-kubeconfig.sh"
+
+  save-credentials:
+    desc: Save credentials from terraform output
+    dir: "{{.ROOT_DIR}}/terraform/live/etcdme"
+    cmds:
+      - "{{.ROOT_DIR}}/terraform/modules/cluster/scripts/save-credentials.sh"
+
+  setup:
+    desc: Decrypt credentials for local development (new dev onboarding)
+    cmds:
+      - "{{.ROOT_DIR}}/tasks/scripts/setup-secrets.sh"
+
+  restart-cilium:
+    desc: Restart Cilium to pick up new CRDs (Gateway API, etc.)
+    cmds:
+      - kubectl rollout restart daemonset cilium -n kube-system
+      - kubectl rollout restart deployment cilium-operator -n kube-system
+      - kubectl rollout status daemonset cilium -n kube-system --timeout=300s
+
+  reboot:
+    desc: Rolling reboot of all Talos nodes
+    vars:
+      SECRETS_DIR: '${XDG_RUNTIME_DIR:-$HOME/.cache}/homelab-secrets'
+    cmds:
+      - |
+        # Get node external IPs from kubectl
+        NODES=$(kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="ExternalIP")].address}')
+        for node in $NODES; do
+          echo "Rebooting $node..."
+          talosctl --talosconfig={{.SECRETS_DIR}}/talosconfig --nodes $node reboot --wait
+          echo "Node $node rebooted, waiting for ready..."
+          sleep 30
+        done
+        echo "All nodes rebooted"
+
+  use:
+    desc: Switch kubectl to Hetzner Talos cluster
+    cmds:
+      - kubectl config use-context admin@homelab

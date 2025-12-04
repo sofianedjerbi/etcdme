@@ -1,0 +1,32 @@
+# Keycloak instance managed by the operator
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  instances: 1
+
+  # Database connection
+  db:
+    vendor: postgres
+    host: postgres-rw.postgres.svc.cluster.local
+    port: 5432
+    database: keycloak
+    usernameSecret:
+      name: keycloak-secrets
+      key: db-username
+    passwordSecret:
+      name: keycloak-secrets
+      key: db-password
+
+  # Hostname configuration (patched by overlay)
+  hostname:
+    hostname: auth.cluster.local
+
+  # HTTP settings (behind gateway)
+  http:
+    httpEnabled: true
+
+  proxy:
+    headers: xforwarded

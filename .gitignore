@@ -1,0 +1,32 @@
+# Environment variables (contains secrets!)
+.env
+
+# Devbox
+.devbox/
+
+# Direnv
+.direnv/
+
+# Talos configurations are SOPS encrypted and safe to commit
+# Only ignore decrypted temp files
+talos/*.dec.yaml
+
+# Terraform (all secrets stored in remote S3 backend)
+**/.terraform/
+**/.terraform.lock.hcl
+**/.terragrunt-cache/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+backup.json

@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: 2.10.3
+    helm:
+      valuesObject:
+        loki:
+          persistence:
+            enabled: false  # No storage yet, will enable with Longhorn later
+        promtail:
+          enabled: true
+        grafana:
+          enabled: true
+          adminPassword: admin  # Change this or use a secret
+          sidecar:
+            datasources:
+              enabled: true
+          persistence:
+            enabled: false
+          additionalDataSources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-server.monitoring.svc.cluster.local
+              access: proxy
+              isDefault: true
+          # Keycloak SSO
+          grafana.ini:
+            server:
+              root_url: https://loki.cluster.local
+            auth.generic_oauth:
+              enabled: true
+              name: Keycloak
+              allow_sign_up: true
+              client_id: grafana
+              client_secret: ${GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+              scopes: openid email profile
+              auth_url: https://auth.cluster.local/realms/homelab/protocol/openid-connect/auth
+              token_url: https://auth.cluster.local/realms/homelab/protocol/openid-connect/token
+              api_url: https://auth.cluster.local/realms/homelab/protocol/openid-connect/userinfo
+              role_attribute_path: contains(realm_access.roles[*], 'admin') && 'Admin' || 'Viewer'
+          envFromSecret: grafana-oauth-secret
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged

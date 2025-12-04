@@ -1,0 +1,114 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: 9.1.3
+    helm:
+      valuesObject:
+        global:
+          domain: argo.etcd.me
+        configs:
+          params:
+            server.insecure: false
+          cm:
+            url: https://argo.etcd.me
+            oidc.config: |
+              name: Keycloak
+              issuer: https://auth.etcd.me/realms/homelab
+              clientID: argocd
+              clientSecret: $oidc.keycloak.clientSecret
+              requestedScopes: ["openid", "profile", "email", "groups"]
+          rbac:
+            policy.default: role:readonly
+            policy.csv: |
+              g, admin, role:admin
+          secret:
+            # Use externally managed secret (argocd-secret from secrets.sops.yaml)
+            createSecret: false
+          cmp:
+            plugins:
+              ksops:
+                allowConcurrency: true
+                discover:
+                  find:
+                    glob: "**/*.sops.yaml"
+                generate:
+                  command: ["kustomize", "build", "--enable-alpha-plugins", "--enable-exec"]
+                lockRepo: false
+        server:
+          certificate:
+            enabled: true
+            domain: argo.etcd.me
+            issuer:
+              group: cert-manager.io
+              kind: ClusterIssuer
+              name: letsencrypt-prod
+          service:
+            type: ClusterIP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        controller:
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+        repoServer:
+          # KSOPS support for SOPS-encrypted secrets
+          env:
+            - name: SOPS_AGE_KEY_FILE
+              value: /sops/age/keys.txt
+          volumes:
+            - name: sops-age
+              secret:
+                secretName: sops-age-key
+          volumeMounts:
+            - name: sops-age
+              mountPath: /sops/age
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        applicationSet:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        redis:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

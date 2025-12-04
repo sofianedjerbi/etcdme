@@ -1,0 +1,72 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Inherit from base
+resources:
+  - ../../base
+  # All secrets in one SOPS-encrypted file
+  - secrets.sops.yaml
+
+# Domain configuration
+configMapGenerator:
+  - name: cluster-config
+    namespace: default
+    literals:
+      - domain=etcd.me
+
+# Patches to replace domain in various resources
+patches:
+  # Gateway - wildcard hostname
+  - target:
+      kind: Gateway
+      name: main-gateway
+    patch: |
+      - op: replace
+        path: /spec/listeners/0/hostname
+        value: "*.etcd.me"
+      - op: replace
+        path: /spec/listeners/1/hostname
+        value: "*.etcd.me"
+      - op: replace
+        path: /spec/listeners/2/hostname
+        value: argo.etcd.me
+
+  # Routes
+  - target:
+      kind: TLSRoute
+      name: argocd-tls-route
+    patch: |
+      - op: replace
+        path: /spec/hostnames/0
+        value: argo.etcd.me
+
+  - target:
+      kind: HTTPRoute
+      name: grafana-route
+    patch: |
+      - op: replace
+        path: /spec/hostnames/0
+        value: loki.etcd.me
+
+  - target:
+      kind: HTTPRoute
+      name: keycloak-route
+    patch: |
+      - op: replace
+        path: /spec/hostnames/0
+        value: auth.etcd.me
+
+  # Keycloak instance - hostname
+  - target:
+      kind: Keycloak
+      name: keycloak
+    patch: |
+      - op: replace
+        path: /spec/hostname/hostname
+        value: auth.etcd.me
+
+# Files that are too complex to patch - override entirely
+  - path: realm-import.yaml
+  - path: loki-stack-app.yaml
+  - path: argocd-app.yaml
+  - path: cluster-issuer.yaml

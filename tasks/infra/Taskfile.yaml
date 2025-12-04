@@ -1,0 +1,28 @@
+version: '3'
+
+tasks:
+  sync:
+    desc: Deploy infrastructure with helmfile
+    cmds:
+      - helmfile sync --include-transitive-needs
+
+  bootstrap:
+    desc: Bootstrap ArgoCD and apply root app
+    cmds:
+      - helmfile sync --include-transitive-needs
+      - kubectl apply -f argocd/apps/root-app.yaml
+
+  root-app:
+    desc: Apply ArgoCD root app (app-of-apps)
+    cmds:
+      - kubectl apply -f argocd/apps/root-app.yaml
+
+  diff:
+    desc: Show infrastructure changes
+    cmds:
+      - helmfile diff
+
+  destroy:
+    desc: Destroy all infrastructure
+    cmds:
+      - helmfile destroy

@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Apps
+  - apps/root-app.yaml
+  - apps/infrastructure/argocd.yaml
+  - apps/infrastructure/argocd-route.yaml
+  - apps/infrastructure/cilium-gateway.yaml
+  - apps/infrastructure/cloudnative-pg.yaml
+  - apps/infrastructure/keycloak-operator.yaml
+  - apps/infrastructure/postgres-cluster.yaml
+  - apps/infrastructure/reloader.yaml
+  - apps/monitoring/loki-stack.yaml
+  - apps/monitoring/prometheus.yaml
+  # Resources
+  - resources/cert-manager/cluster-issuer.yaml
+  - resources/gateway/gateway-class.yaml
+  - resources/gateway/main-gateway.yaml
+  # Keycloak via operator CRDs
+  - resources/keycloak/instance.yaml
+  - resources/keycloak/realm-import.yaml
+  - resources/postgres/cluster.yaml
+  - resources/routes/argocd-route.yaml
+  - resources/routes/grafana-route.yaml
+  - resources/routes/keycloak-route.yaml
+  # All secrets are in overlay secrets.sops.yaml
