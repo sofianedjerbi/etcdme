@@ -19,7 +19,7 @@ configMapGenerator:
       - repo-url=https://github.com/sofianedjerbi/homelab
       - overlay-path=argocd/overlays/etcdme-nbg1-dc3
 
-# Repository configuration - replace placeholders
+# Repository configuration - replace placeholders only in apps that use them
 replacements:
   - source:
       kind: ConfigMap
@@ -28,6 +28,22 @@ replacements:
     targets:
       - select:
           kind: Application
+          name: root-app
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: cilium-gateway
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: postgres-cluster
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: argocd-routes
         fieldPaths:
           - spec.source.repoURL
   - source:
