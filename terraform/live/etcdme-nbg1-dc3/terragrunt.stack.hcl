@@ -34,7 +34,8 @@ unit "cluster" {
     gateway_api_experimental = true  # Includes TLSRoute
 
     # Set false to allow cluster destruction
-    cluster_delete_protection = false
+    cluster_delete_protection  = false
+    cluster_graceful_destroy   = false
   }
 }
 

@@ -83,3 +83,9 @@ variable "cluster_delete_protection" {
   type        = bool
   default     = true
 }
+
+variable "cluster_graceful_destroy" {
+  description = "Gracefully drain and reset nodes before destroy"
+  type        = bool
+  default     = true
+}

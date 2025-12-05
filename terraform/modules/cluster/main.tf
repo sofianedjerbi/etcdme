@@ -73,4 +73,7 @@ module "kubernetes" {
 
   # Delete protection (set false to allow destroy)
   cluster_delete_protection = var.cluster_delete_protection
+
+  # Graceful destroy (set false to skip etcd leave)
+  cluster_graceful_destroy = var.cluster_graceful_destroy
 }

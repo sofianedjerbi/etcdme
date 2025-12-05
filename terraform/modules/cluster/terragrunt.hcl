@@ -32,4 +32,7 @@ inputs = {
 
   # Delete protection
   cluster_delete_protection = try(values.cluster_delete_protection, true)
+
+  # Graceful destroy
+  cluster_graceful_destroy = try(values.cluster_graceful_destroy, true)
 }
