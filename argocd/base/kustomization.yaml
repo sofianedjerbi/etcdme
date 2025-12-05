@@ -6,7 +6,6 @@ resources:
   - apps/root-app.yaml
   - apps/infrastructure/argocd.yaml
   - apps/infrastructure/argocd-route.yaml
-  - apps/infrastructure/gateway-api.yaml
   - apps/infrastructure/cilium-gateway.yaml
   - apps/infrastructure/cloudnative-pg.yaml
   - apps/infrastructure/keycloak-operator.yaml
