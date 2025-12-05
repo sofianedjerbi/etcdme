@@ -3,6 +3,8 @@ kind: TLSRoute
 metadata:
   name: argocd-tls-route
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   hostnames:
     - argo.cluster.local

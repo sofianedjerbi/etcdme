@@ -3,6 +3,8 @@ kind: Cluster
 metadata:
   name: postgres
   namespace: postgres
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   instances: 1  # Single instance for lab, increase for HA
 
