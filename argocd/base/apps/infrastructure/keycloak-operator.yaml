@@ -9,9 +9,10 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: oci://quay.io/keycloak
-    chart: keycloak-operator
-    targetRevision: 26.0.5
+    repoURL: https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/refs/tags/26.4.7/kubernetes
+    path: .
+    directory:
+      include: "kubernetes.yml"
   destination:
     server: https://kubernetes.default.svc
     namespace: keycloak
