@@ -19,7 +19,7 @@ unit "cluster" {
     control_plane_nodepools = [
       {
         name     = "control-plane"
-        type     = "cx22"
+        type     = "cx23"
         location = "nbg1"
         count    = 3
       }
