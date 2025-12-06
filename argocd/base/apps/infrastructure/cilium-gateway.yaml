@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: REPO_URL_PLACEHOLDER
     targetRevision: HEAD
-    path: argocd/base/resources/gateway
+    path: GATEWAY_PATH_PLACEHOLDER
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:

@@ -18,6 +18,7 @@ configMapGenerator:
       - domain=etcd.me
       - repo-url=https://github.com/sofianedjerbi/homelab
       - overlay-path=argocd/overlays/etcdme-nbg1-dc3
+      - gateway-path=argocd/overlays/etcdme-nbg1-dc3/resources/gateway
 
 # Repository configuration - replace placeholders only in apps that use them
 replacements:
@@ -56,24 +57,20 @@ replacements:
           name: root-app
         fieldPaths:
           - spec.source.path
+  - source:
+      kind: ConfigMap
+      name: cluster-config
+      fieldPath: data.gateway-path
+    targets:
+      - select:
+          kind: Application
+          name: cilium-gateway
+        fieldPaths:
+          - spec.source.path
 
 # Patches to replace domain in various resources
+# Note: Gateway patches are in overlays/etcdme-nbg1-dc3/resources/gateway/kustomization.yaml
 patches:
-  # Gateway - wildcard hostname
-  - target:
-      kind: Gateway
-      name: main-gateway
-    patch: |
-      - op: replace
-        path: /spec/listeners/0/hostname
-        value: "*.etcd.me"
-      - op: replace
-        path: /spec/listeners/1/hostname
-        value: "*.etcd.me"
-      - op: replace
-        path: /spec/listeners/2/hostname
-        value: argo.etcd.me
-
   # Routes
   - target:
       kind: TLSRoute
