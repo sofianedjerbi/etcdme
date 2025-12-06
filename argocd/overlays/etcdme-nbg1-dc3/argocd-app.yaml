@@ -17,7 +17,7 @@ spec:
           domain: argo.etcd.me
         configs:
           params:
-            server.insecure: false
+            server.insecure: true
           cm:
             url: https://argo.etcd.me
             oidc.config: |
