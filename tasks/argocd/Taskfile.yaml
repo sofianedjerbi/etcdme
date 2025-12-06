@@ -43,22 +43,17 @@ tasks:
     desc: Get Keycloak admin credentials
     cmds:
       - echo "=== Keycloak Admin Credentials ==="
-      - echo "URL: https://auth.etcd.me"
-      - echo -n "Username: " && kubectl -n keycloak get secret keycloak-initial-admin -o jsonpath="{.data.username}" | base64 -d && echo
-      - echo -n "Password: " && kubectl -n keycloak get secret keycloak-initial-admin -o jsonpath="{.data.password}" | base64 -d && echo
-      - echo ""
-      - echo "To get OIDC client secrets:"
-      - echo "  1. Login to Keycloak admin console"
-      - echo "  2. Switch to 'homelab' realm"
-      - echo "  3. Go to Clients > argocd/grafana > Credentials tab"
+      - echo "URL https://auth.etcd.me"
+      - 'echo -n "Username: " && kubectl -n keycloak get secret keycloak-initial-admin -o jsonpath="{.data.username}" | base64 -d && echo'
+      - 'echo -n "Password: " && kubectl -n keycloak get secret keycloak-initial-admin -o jsonpath="{.data.password}" | base64 -d && echo'
 
   grafana-admin:
     desc: Get Grafana admin credentials
     cmds:
       - echo "=== Grafana Admin Credentials ==="
-      - echo "URL: https://loki.etcd.me"
-      - echo -n "Username: " && kubectl -n monitoring get secret grafana-admin -o jsonpath="{.data.admin-user}" | base64 -d && echo
-      - echo -n "Password: " && kubectl -n monitoring get secret grafana-admin -o jsonpath="{.data.admin-password}" | base64 -d && echo
+      - echo "URL https://loki.etcd.me"
+      - 'echo -n "Username: " && kubectl -n monitoring get secret grafana-admin -o jsonpath="{.data.admin-user}" | base64 -d && echo'
+      - 'echo -n "Password: " && kubectl -n monitoring get secret grafana-admin -o jsonpath="{.data.admin-password}" | base64 -d && echo'
 
   post-bootstrap:
     desc: Show all credentials needed for post-bootstrap setup
@@ -68,10 +63,3 @@ tasks:
       - task: grafana-admin
       - echo ""
       - task: password
-      - echo ""
-      - echo "=== Post-Bootstrap Steps ==="
-      - echo "1. Get OIDC client secrets from Keycloak (see keycloak-admin above)"
-      - echo "2. Update secrets: sops -d -i argocd/overlays/{{.OVERLAY}}/secrets.sops.yaml"
-      - echo "3. Replace REPLACE_WITH_KEYCLOAK_SECRET with actual values"
-      - echo "4. Re-encrypt: sops -e -i argocd/overlays/{{.OVERLAY}}/secrets.sops.yaml"
-      - echo "5. Commit and push to trigger ArgoCD sync"
