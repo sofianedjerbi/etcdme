@@ -4,9 +4,6 @@
 #
 # Generates random passwords for internal services.
 # External credentials (AWS, AGE key) must be provided via environment variables.
-#
-# NOTE: OIDC client secrets for Grafana and ArgoCD are NOT generated here.
-# After bootstrap, get them from Keycloak admin console and update the secrets.
 
 set -euo pipefail
 
@@ -23,6 +20,11 @@ NC='\033[0m'
 # Generate random password (32 chars, alphanumeric)
 gen_password() {
   openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32
+}
+
+# Generate random secret (64 chars for OIDC secrets)
+gen_secret() {
+  openssl rand -base64 48 | tr -dc 'a-zA-Z0-9' | head -c 64
 }
 
 echo -e "${GREEN}=== Cluster Secrets Generator ===${NC}"
@@ -54,13 +56,17 @@ fi
 echo -e "${YELLOW}Generating secrets for overlay: ${OVERLAY}${NC}"
 echo ""
 
-# Generate random secrets (some must match across resources)
+# Generate random secrets
 KEYCLOAK_DB_PASSWORD=$(gen_password)
 GRAFANA_ADMIN_PASSWORD=$(gen_password)
+OIDC_SECRET_ARGOCD=$(gen_secret)
+OIDC_SECRET_GRAFANA=$(gen_secret)
 
 echo "Generated passwords:"
 echo "  - Keycloak DB password"
 echo "  - Grafana admin password"
+echo "  - OIDC client secret (ArgoCD)"
+echo "  - OIDC client secret (Grafana)"
 echo ""
 
 # Copy example and replace values
@@ -82,6 +88,12 @@ sed -i "0,/password: REPLACE_ME/s|password: REPLACE_ME|password: ${KEYCLOAK_DB_P
 # Grafana admin
 sed -i "s|admin-password: REPLACE_ME|admin-password: ${GRAFANA_ADMIN_PASSWORD}|" "$SECRETS_FILE"
 
+# OIDC secrets - same value goes to oidc-client-secrets AND the consuming services
+sed -i "s|argocd: REPLACE_OIDC_ARGOCD|argocd: ${OIDC_SECRET_ARGOCD}|" "$SECRETS_FILE"
+sed -i "s|grafana: REPLACE_OIDC_GRAFANA|grafana: ${OIDC_SECRET_GRAFANA}|" "$SECRETS_FILE"
+sed -i "s|oidc.keycloak.clientSecret: REPLACE_OIDC_ARGOCD|oidc.keycloak.clientSecret: ${OIDC_SECRET_ARGOCD}|" "$SECRETS_FILE"
+sed -i "s|GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: REPLACE_OIDC_GRAFANA|GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ${OIDC_SECRET_GRAFANA}|" "$SECRETS_FILE"
+
 echo -e "${GREEN}Secrets file created: ${SECRETS_FILE}${NC}"
 echo ""
 
@@ -95,9 +107,3 @@ echo ""
 echo "Next steps:"
 echo "  1. Commit: git add ${SECRETS_FILE} && git commit -m 'feat: add encrypted secrets'"
 echo "  2. Deploy: task argocd:bootstrap"
-echo ""
-echo -e "${YELLOW}POST-BOOTSTRAP:${NC}"
-echo "  3. Get OIDC client secrets from Keycloak admin console (homelab realm)"
-echo "  4. Update grafana-oauth and argocd-secret in ${SECRETS_FILE}"
-echo "  5. Re-encrypt: sops -e -i ${SECRETS_FILE}"
-echo "  6. Commit and push to trigger ArgoCD sync"

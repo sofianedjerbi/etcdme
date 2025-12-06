@@ -8,6 +8,16 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   keycloakCRName: keycloak
+  # Placeholders map K8s Secrets to env vars for realm import
+  placeholders:
+    ARGOCD_CLIENT_SECRET:
+      secret:
+        name: oidc-client-secrets
+        key: argocd
+    GRAFANA_CLIENT_SECRET:
+      secret:
+        name: oidc-client-secrets
+        key: grafana
   realm:
     realm: homelab
     enabled: true
@@ -159,13 +169,13 @@ spec:
     defaultOptionalClientScopes:
       - groups
 
-    # OIDC Clients - Keycloak generates secrets for confidential clients
-    # After bootstrap, retrieve secrets from Keycloak admin console
+    # OIDC Clients - secrets injected via placeholders from oidc-client-secrets
     clients:
       - clientId: grafana
         name: Grafana
         enabled: true
         clientAuthenticatorType: client-secret
+        secret: "$(GRAFANA_CLIENT_SECRET)"
         redirectUris:
           - "https://loki.cluster.local/*"
         webOrigins:
@@ -179,6 +189,7 @@ spec:
         name: ArgoCD
         enabled: true
         clientAuthenticatorType: client-secret
+        secret: "$(ARGOCD_CLIENT_SECRET)"
         redirectUris:
           - "https://argo.cluster.local/auth/callback"
         webOrigins:
