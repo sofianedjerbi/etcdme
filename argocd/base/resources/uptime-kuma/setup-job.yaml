@@ -6,8 +6,7 @@ metadata:
   namespace: uptime-kuma
   annotations:
     argocd.argoproj.io/sync-wave: "7"
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    # Removed hook annotations - job runs as regular resource, doesn't block sync
 spec:
   ttlSecondsAfterFinished: 300
   backoffLimit: 5
