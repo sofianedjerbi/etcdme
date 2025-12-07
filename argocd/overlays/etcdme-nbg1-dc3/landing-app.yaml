@@ -10,7 +10,7 @@ metadata:
     argocd-image-updater.argoproj.io/image-list: landing=ghcr.io/sofianedjerbi/homelanding:latest
     argocd-image-updater.argoproj.io/landing.update-strategy: digest
 spec:
-  project: default
+  project: landing
   source:
     repoURL: https://github.com/sofianedjerbi/homelab
     targetRevision: HEAD

@@ -11,6 +11,8 @@ configMapGenerator:
       disableNameSuffixHash: true
 
 resources:
+  # Projects (for multi-tenancy)
+  - projects/landing-project.yaml
   # Apps
   - apps/root-app.yaml
   - apps/infrastructure/argocd.yaml

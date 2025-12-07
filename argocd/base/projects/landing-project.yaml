@@ -1,0 +1,47 @@
+# ArgoCD Project for Landing Page
+# Demonstrates multi-tenant isolation - can be replicated for other users/repos
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: landing
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  description: Landing page project - isolated deployment
+
+  # Allowed source repositories
+  sourceRepos:
+    - 'https://github.com/sofianedjerbi/homelanding'
+    - 'https://github.com/sofianedjerbi/homelab'
+
+  # Allowed destinations (only landing namespace)
+  destinations:
+    - namespace: landing
+      server: https://kubernetes.default.svc
+
+  # No cluster-scoped resources allowed
+  clusterResourceWhitelist: []
+
+  # Allowed namespace-scoped resources
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: Pod
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: ReplicaSet
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+
+  # Deny deletions of certain resources (optional safety)
+  # orphanedResources:
+  #   warn: true
