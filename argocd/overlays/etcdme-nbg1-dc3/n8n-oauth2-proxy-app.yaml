@@ -35,8 +35,6 @@ spec:
           pass-authorization-header: "true"
           set-authorization-header: "true"
           set-xauthrequest: "true"
-          # Redirect to Keycloak logout after clearing oauth2-proxy session
-          logout-redirect-url: "https://auth.etcd.me/realms/homelab/protocol/openid-connect/logout?client_id=n8n"
         service:
           type: ClusterIP
           portNumber: 4180
