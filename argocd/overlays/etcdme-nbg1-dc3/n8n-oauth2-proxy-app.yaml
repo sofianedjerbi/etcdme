@@ -22,6 +22,7 @@ spec:
         extraArgs:
           provider: keycloak-oidc
           oidc-issuer-url: https://auth.etcd.me/realms/homelab
+          oidc-extra-audience: account
           code-challenge-method: S256
           email-domain: "*"
           cookie-secure: "true"
