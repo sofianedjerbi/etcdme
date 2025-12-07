@@ -18,6 +18,7 @@ spec:
       containers:
         - name: landing
           image: ghcr.io/sofianedjerbi/homelanding:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           resources:
