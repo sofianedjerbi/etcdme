@@ -38,19 +38,33 @@ data:
             const { stack } = app.router;
             const idx = stack.findIndex((l) => l?.name === 'cookieParser');
 
+            const ssoLogoutCookie = 'sso-logout-pending';
+
             const layer = new Layer('/', { strict: false, end: false }, async (req, res, next) => {
               try {
-                // Intercept /signout page navigation for full SSO logout
-                // Skip for XHR requests (they can't handle cross-origin redirects)
-                const isXhr = req.headers['x-requested-with'] === 'XMLHttpRequest';
-                if (!isXhr && (req.url === '/signout' || req.url.startsWith('/signout?'))) {
-                  this.logger?.info(`SSO logout intercepted for ${req.url}`);
+                // Check for pending SSO logout (set by /rest/logout)
+                // This triggers on the NEXT request after logout (e.g., page refresh)
+                if (req.cookies?.[ssoLogoutCookie]) {
+                  res.clearCookie(ssoLogoutCookie, { path: '/' });
                   res.clearCookie(cookieName, { path: '/' });
                   const keycloakLogout = process.env.N8N_KEYCLOAK_LOGOUT_URL || '';
                   if (keycloakLogout) {
                     return res.redirect(`/oauth2/sign_out?rd=${encodeURIComponent(keycloakLogout)}`);
                   }
                   return res.redirect('/oauth2/sign_out');
+                }
+
+                // Intercept /rest/logout to set pending SSO logout cookie
+                // The actual SSO logout happens on the next request
+                if (req.url === '/rest/logout' || req.url.startsWith('/rest/logout?')) {
+                  res.cookie(ssoLogoutCookie, 'true', {
+                    path: '/',
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 60000 // 1 minute expiry
+                  });
+                  // Let n8n handle the logout normally, cookie will trigger SSO logout next request
+                  return next();
                 }
 
                 // Skip if URL matches ignore list
