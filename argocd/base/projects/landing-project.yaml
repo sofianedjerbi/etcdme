@@ -10,10 +10,9 @@ metadata:
 spec:
   description: Landing page project - isolated deployment
 
-  # Allowed source repositories
+  # Allowed source repositories (only homelanding - fully isolated)
   sourceRepos:
     - 'https://github.com/sofianedjerbi/homelanding'
-    - 'https://github.com/sofianedjerbi/homelab'
 
   # Allowed destinations (only landing namespace)
   destinations:

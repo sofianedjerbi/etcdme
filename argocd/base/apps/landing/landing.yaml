@@ -9,9 +9,9 @@ metadata:
 spec:
   project: landing
   source:
-    repoURL: https://github.com/sofianedjerbi/homelab
+    repoURL: https://github.com/sofianedjerbi/homelanding
     targetRevision: HEAD
-    path: argocd/base/resources/landing
+    path: k8s
   destination:
     server: https://kubernetes.default.svc
     namespace: landing
