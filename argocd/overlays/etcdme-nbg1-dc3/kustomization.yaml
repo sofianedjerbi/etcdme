@@ -4,6 +4,7 @@ kind: Kustomization
 # Inherit from base
 resources:
   - ../../base
+  - n8n-client-setup.yaml
 
 # KSOPS generator for SOPS-encrypted secrets
 # ArgoCD decrypts via KSOPS plugin, kubectl skips this

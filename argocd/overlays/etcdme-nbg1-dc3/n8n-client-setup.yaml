@@ -1,0 +1,78 @@
+# Job to create n8n client in Keycloak - etcd.me overlay
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-n8n-client-setup
+  namespace: keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: setup
+          image: quay.io/keycloak/keycloak:26.0
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              # Wait for Keycloak to be ready
+              until curl -sf http://keycloak-service.keycloak.svc.cluster.local:8080/health/ready; do
+                echo "Waiting for Keycloak..."
+                sleep 5
+              done
+
+              # Login to Keycloak
+              /opt/keycloak/bin/kcadm.sh config credentials \
+                --server http://keycloak-service.keycloak.svc.cluster.local:8080 \
+                --realm master \
+                --user "$KEYCLOAK_ADMIN" \
+                --password "$KEYCLOAK_ADMIN_PASSWORD"
+
+              # Check if client already exists
+              if /opt/keycloak/bin/kcadm.sh get clients -r homelab -q clientId=n8n | grep -q '"clientId" : "n8n"'; then
+                echo "n8n client already exists, updating secret..."
+                CLIENT_ID=$(/opt/keycloak/bin/kcadm.sh get clients -r homelab -q clientId=n8n --fields id | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
+                /opt/keycloak/bin/kcadm.sh update clients/$CLIENT_ID -r homelab -s "secret=$N8N_CLIENT_SECRET"
+                echo "Client secret updated"
+              else
+                echo "Creating n8n client..."
+                /opt/keycloak/bin/kcadm.sh create clients -r homelab \
+                  -s clientId=n8n \
+                  -s name="n8n Workflow Automation" \
+                  -s enabled=true \
+                  -s publicClient=false \
+                  -s clientAuthenticatorType=client-secret \
+                  -s "secret=$N8N_CLIENT_SECRET" \
+                  -s 'redirectUris=["https://n8n.etcd.me/oauth2/callback"]' \
+                  -s 'webOrigins=["https://n8n.etcd.me"]' \
+                  -s standardFlowEnabled=true \
+                  -s directAccessGrantsEnabled=false \
+                  -s protocol=openid-connect \
+                  -s 'attributes={"pkce.code.challenge.method":"S256"}'
+                echo "n8n client created"
+              fi
+
+              echo "Done!"
+          env:
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-initial-admin
+                  key: username
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-initial-admin
+                  key: password
+            - name: N8N_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-client-secret
+                  key: client-secret
