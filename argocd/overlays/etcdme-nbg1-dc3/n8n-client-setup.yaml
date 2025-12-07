@@ -43,10 +43,12 @@ spec:
 
               # Check if client already exists
               if /opt/keycloak/bin/kcadm.sh get clients -r homelab -q clientId=n8n | grep -q '"clientId" : "n8n"'; then
-                echo "n8n client already exists, updating secret..."
+                echo "n8n client already exists, updating..."
                 CLIENT_ID=$(/opt/keycloak/bin/kcadm.sh get clients -r homelab -q clientId=n8n --fields id | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
-                /opt/keycloak/bin/kcadm.sh update clients/$CLIENT_ID -r homelab -s "secret=$N8N_CLIENT_SECRET"
-                echo "Client secret updated"
+                /opt/keycloak/bin/kcadm.sh update clients/$CLIENT_ID -r homelab \
+                  -s "secret=$N8N_CLIENT_SECRET" \
+                  -s 'attributes={"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"https://n8n.etcd.me/*"}'
+                echo "Client updated"
               else
                 echo "Creating n8n client..."
                 /opt/keycloak/bin/kcadm.sh create clients -r homelab \
@@ -61,7 +63,7 @@ spec:
                   -s standardFlowEnabled=true \
                   -s directAccessGrantsEnabled=false \
                   -s protocol=openid-connect \
-                  -s 'attributes={"pkce.code.challenge.method":"S256"}'
+                  -s 'attributes={"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"https://n8n.etcd.me/*"}'
                 echo "n8n client created"
               fi
 
