@@ -24,7 +24,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: data
-              mountPath: /app/data/state
+              mountPath: /app/data
           resources:
             requests:
               cpu: 50m
