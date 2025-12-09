@@ -105,6 +105,22 @@ EOF
     fi
   fi
 
+  # Update Filestash S3 credentials if configured
+  if [[ -n "${FILESTASH_S3_ENDPOINT:-}" ]]; then
+    if grep -q "name: filestash-config" "$SECRETS_FILE"; then
+      echo "Updating Filestash S3 credentials..."
+      # Escape special chars for perl regex replacement
+      s3_endpoint_escaped="${FILESTASH_S3_ENDPOINT//\//\\/}"
+      s3_region="${FILESTASH_S3_REGION:-us-east-1}"
+      perl -i -0pe "s/(name: filestash-config.*?s3-endpoint: )[^\n]*/\${1}${s3_endpoint_escaped}/s" "$SECRETS_FILE"
+      perl -i -0pe "s/(name: filestash-config.*?s3-access-key: )[^\n]*/\${1}${FILESTASH_S3_ACCESS_KEY}/s" "$SECRETS_FILE"
+      perl -i -0pe "s/(name: filestash-config.*?s3-secret-key: )[^\n]*/\${1}${FILESTASH_S3_SECRET_KEY}/s" "$SECRETS_FILE"
+      perl -i -0pe "s/(name: filestash-config.*?s3-bucket: )[^\n]*/\${1}${FILESTASH_S3_BUCKET}/s" "$SECRETS_FILE"
+      perl -i -0pe "s/(name: filestash-config.*?s3-region: )[^\n]*/\${1}${s3_region}/s" "$SECRETS_FILE"
+      echo "  - Updated filestash-config S3 credentials"
+    fi
+  fi
+
   # Compare example file to find missing secrets and add them
   if [[ -f "$EXAMPLE_FILE" ]]; then
     echo "Checking for new secrets in example file..."
