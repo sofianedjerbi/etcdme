@@ -1,4 +1,4 @@
-# Homelab
+# etcd.me
 
 High-availability Kubernetes on Hetzner Cloud. Built for resilience.
 
