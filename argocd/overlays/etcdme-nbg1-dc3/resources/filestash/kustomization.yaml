@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../../base/resources/filestash
+
+patches:
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: filestash
+        namespace: filestash
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: config-generator
+                env:
+                  - name: APPLICATION_URL
+                    value: "https://drive.etcd.me"
+                  - name: OIDC_CONFIG_URL
+                    value: "https://auth.etcd.me/realms/homelab/.well-known/openid-configuration"
+            containers:
+              - name: filestash
+                env:
+                  - name: APPLICATION_URL
+                    value: "https://drive.etcd.me"
