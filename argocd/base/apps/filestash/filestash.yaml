@@ -1,0 +1,23 @@
+# Filestash - web-based file manager
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: filestash
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: REPO_URL_PLACEHOLDER
+    targetRevision: HEAD
+    path: argocd/base/resources/filestash
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: filestash
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

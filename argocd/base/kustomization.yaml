@@ -34,6 +34,8 @@ resources:
   - apps/landing/landing.yaml
   # Playwright MCP server
   - apps/playwright-mcp/playwright-mcp.yaml
+  # Filestash file manager
+  - apps/filestash/filestash.yaml
   # Resources (only those NOT managed by child apps)
   - resources/cert-manager/cluster-issuer.yaml
   # Keycloak via operator CRDs (no child app for these)

@@ -6,6 +6,7 @@ resources:
   - ../../base
   - n8n-client-setup.yaml
   - playwright-mcp-route.yaml
+  - filestash-route.yaml
 
 # KSOPS generator for SOPS-encrypted secrets
 # ArgoCD decrypts via KSOPS plugin, kubectl skips this
@@ -53,6 +54,11 @@ replacements:
       - select:
           kind: Application
           name: playwright-mcp
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: filestash
         fieldPaths:
           - spec.source.repoURL
   - source:
