@@ -64,6 +64,7 @@ spec:
             - "chromium"
             - "--no-sandbox"
             - "--isolated"
+            - "--shared-browser-context"
             - "--port"
             - "8931"
             - "--host"
