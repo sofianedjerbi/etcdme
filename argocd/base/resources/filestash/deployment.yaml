@@ -26,7 +26,8 @@ spec:
               mountPath: /app/data/state
         - name: config-generator
           image: golang:1.21-alpine
-          command: ['sh', '-c', 'cd /tmp && cp /scripts/generate-config.go . && go mod init config && go mod tidy && go run generate-config.go']
+          workingDir: /go/src/config
+          command: ['sh', '-c', 'mkdir -p /go/src/config && cp /scripts/generate-config.go . && go mod init config && go mod tidy && go run generate-config.go']
           env:
             - name: CONFIG_PATH
               value: /app/data/state/config/config.json
