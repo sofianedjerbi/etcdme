@@ -31,8 +31,10 @@ data:
     // Encrypt using AES-GCM (matching Filestash's PerformConfigEncryption)
     function encrypt(secretKey, plaintext) {
       // Derive key the same way Filestash does
+      // Step 1: SHA256("PROOF_" + secret)[:len(secret)]
       const derivedKey = hash('PROOF_' + secretKey, secretKey.length);
-      const key = hash(derivedKey.toString('binary'), 16);
+      // Step 2: SHA256(derivedKey)[:16] - pass Buffer directly, not string
+      const key = hash(derivedKey, 16);
 
       // Compress with zlib
       const compressed = zlib.deflateSync(Buffer.from(plaintext), { level: 9 });
