@@ -36,6 +36,7 @@ resources:
   - apps/playwright-mcp/playwright-mcp.yaml
   # Filestash file manager
   - apps/filestash/filestash.yaml
+  - apps/filestash/oauth2-proxy.yaml
   # Resources (only those NOT managed by child apps)
   - resources/cert-manager/cluster-issuer.yaml
   # Keycloak via operator CRDs (no child app for these)
