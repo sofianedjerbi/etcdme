@@ -62,15 +62,21 @@ data:
       const configPath = process.env.CONFIG_PATH || '/app/data/state/config/config.json';
 
       // Check if config already exists and is properly configured
+      const applicationURL = process.env.APPLICATION_URL || '';
       if (fs.existsSync(configPath)) {
         try {
           const existing = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-          // Regenerate if admin password is not set or OIDC is not configured
-          if (existing.auth?.admin && existing.middleware?.identity_provider) {
+          // Regenerate if admin password is not set, OIDC is not configured, or host is wrong
+          const hostCorrect = existing.general?.host === applicationURL;
+          if (existing.auth?.admin && existing.middleware?.identity_provider && hostCorrect) {
             console.log('Config already properly configured, skipping generation');
             process.exit(0);
           }
-          console.log('Existing config incomplete, regenerating...');
+          if (!hostCorrect) {
+            console.log(`Host mismatch: ${existing.general?.host} vs ${applicationURL}, regenerating...`);
+          } else {
+            console.log('Existing config incomplete, regenerating...');
+          }
         } catch (e) {
           console.log('Could not parse existing config, regenerating...');
         }
@@ -84,7 +90,6 @@ data:
       }
 
       const adminPassword = process.env.FILESTASH_ADMIN_PASSWORD || '';
-      const applicationURL = process.env.APPLICATION_URL || '';
 
       // OIDC settings
       const oidcClientID = process.env.OIDC_CLIENT_ID || '';
