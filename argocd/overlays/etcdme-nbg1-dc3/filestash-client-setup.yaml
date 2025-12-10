@@ -8,6 +8,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    config-version: "oauth2-proxy-v1"
 spec:
   ttlSecondsAfterFinished: 300
   template:
