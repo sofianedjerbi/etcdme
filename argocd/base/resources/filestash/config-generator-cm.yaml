@@ -141,8 +141,8 @@ data:
 
       // Add OIDC middleware if configured
       if (oidcClientID && oidcClientSecret && oidcConfigURL) {
+        // Note: 'type' is at outer level, not in encrypted params
         const oidcParams = {
-          type: 'openid',
           client_id: oidcClientID,
           client_secret: oidcClientSecret,
           config_url: oidcConfigURL,
