@@ -21,6 +21,8 @@ patches:
                     value: "drive.etcd.me"
                   - name: OIDC_CONFIG_URL
                     value: "https://auth.etcd.me/realms/homelab/.well-known/openid-configuration"
+                  - name: FORCE_REGENERATE
+                    value: "true"
             containers:
               - name: filestash
                 env:

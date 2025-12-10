@@ -63,6 +63,13 @@ data:
 
       // Check if config already exists and is properly configured
       const applicationURL = process.env.APPLICATION_URL || '';
+      const forceRegenerate = process.env.FORCE_REGENERATE === 'true';
+
+      if (forceRegenerate && fs.existsSync(configPath)) {
+        console.log('FORCE_REGENERATE=true, removing existing config...');
+        fs.unlinkSync(configPath);
+      }
+
       if (fs.existsSync(configPath)) {
         try {
           const existing = JSON.parse(fs.readFileSync(configPath, 'utf8'));
