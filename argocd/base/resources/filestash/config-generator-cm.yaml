@@ -50,8 +50,13 @@ data:
       // Combine: nonce + ciphertext + authTag
       const result = Buffer.concat([nonce, encrypted, authTag]);
 
-      // Return base64 URL encoded
-      return result.toString('base64url');
+      // Return base64 URL encoded with padding (Go's base64.URLEncoding includes padding)
+      let b64 = result.toString('base64url');
+      // Add padding
+      while (b64.length % 4 !== 0) {
+        b64 += '=';
+      }
+      return b64;
     }
 
     // Hash password using bcrypt (requires bcryptjs to be installed)
