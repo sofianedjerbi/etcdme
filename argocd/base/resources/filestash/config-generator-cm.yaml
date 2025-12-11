@@ -194,6 +194,19 @@ data:
 
     		// Configure OIDC middleware if credentials provided
     		if oidcConfigURL != "" && oidcClientID != "" && oidcClientSecret != "" {
+    			// Pre-encrypt params so Filestash doesn't double-encrypt
+    			s3Params := map[string]interface{}{
+    				"type":              "s3",
+    				"endpoint":          s3Endpoint,
+    				"access_key_id":     s3AccessKey,
+    				"secret_access_key": s3SecretKey,
+    				"bucket":            s3Bucket,
+    				"region":            s3Region,
+    				"path":              "/",
+    			}
+    			s3ParamsJSON, _ := json.Marshal(s3Params)
+    			encryptedS3Params := Encrypt(secretKey, s3ParamsJSON)
+
     			config["middleware"] = map[string]interface{}{
     				"identity_provider": map[string]interface{}{
     					"type":              "openid",
@@ -204,18 +217,10 @@ data:
     				},
     				"attribute_mapping": map[string]interface{}{
     					"related_backend": "s3",
-    					"params": map[string]interface{}{
-    						"type":              "s3",
-    						"endpoint":          s3Endpoint,
-    						"access_key_id":     s3AccessKey,
-    						"secret_access_key": s3SecretKey,
-    						"bucket":            s3Bucket,
-    						"region":            s3Region,
-    						"path":              "/",
-    					},
+    					"params":          encryptedS3Params,
     				},
     			}
-    			fmt.Println("OIDC middleware configured with S3 backend")
+    			fmt.Println("OIDC middleware configured with pre-encrypted S3 params")
     		}
     	}
 
