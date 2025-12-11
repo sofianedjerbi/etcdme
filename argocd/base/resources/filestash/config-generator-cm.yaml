@@ -106,20 +106,16 @@ data:
     			if json.Unmarshal(data, &existing) == nil {
     				general, _ := existing["general"].(map[string]interface{})
     				auth, _ := existing["auth"].(map[string]interface{})
-    				middleware, _ := existing["middleware"].(map[string]interface{})
 
     				hostCorrect := general != nil && general["host"] == applicationURL
     				hasAdmin := auth != nil && auth["admin"] != nil
-    				hasMiddleware := middleware != nil
 
-    				if hostCorrect && hasAdmin && hasMiddleware {
+    				if hostCorrect && hasAdmin {
     					fmt.Println("Config already properly configured, skipping generation")
     					return
     				}
     				if !hostCorrect {
     					fmt.Printf("Host mismatch: %v vs %s, regenerating...\n", general["host"], applicationURL)
-    				} else if !hasMiddleware {
-    					fmt.Println("Middleware not configured, regenerating...")
     				} else {
     					fmt.Println("Existing config incomplete, regenerating...")
     				}
@@ -194,29 +190,10 @@ data:
     		}
     		fmt.Println("S3 backend configured")
 
-    		// Configure passthrough middleware with direct strategy
-    		// This auto-connects authenticated users (via oauth2-proxy) to S3
-    		config["middleware"] = map[string]interface{}{
-    			"identity_provider": map[string]interface{}{
-    				"type": "passthrough",
-    				"params": map[string]interface{}{
-    					"strategy": "direct",
-    				},
-    			},
-    			"attribute_mapping": map[string]interface{}{
-    				"related_backend": "Cloud Storage",
-    				"params": map[string]interface{}{
-    					"type":              "s3",
-    					"endpoint":          s3Endpoint,
-    					"access_key_id":     s3AccessKey,
-    					"secret_access_key": s3SecretKey,
-    					"bucket":            s3Bucket,
-    					"region":            s3Region,
-    					"path":              "/",
-    				},
-    			},
-    		}
-    		fmt.Println("Passthrough middleware configured for auto-login")
+    		// Note: Middleware configuration removed - Filestash's passthrough middleware
+    		// has encryption issues when configured programmatically. Users will see
+    		// the S3 backend option and need to click connect (credentials are pre-filled
+    		// in connections array above)
     	}
 
     	// Write config
