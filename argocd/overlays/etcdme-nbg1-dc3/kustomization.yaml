@@ -6,8 +6,6 @@ resources:
   - ../../base
   - n8n-client-setup.yaml
   - playwright-mcp-route.yaml
-  - filestash-route.yaml
-  - filestash-client-setup.yaml
 
 # KSOPS generator for SOPS-encrypted secrets
 # ArgoCD decrypts via KSOPS plugin, kubectl skips this
@@ -24,7 +22,6 @@ configMapGenerator:
       - overlay-path=argocd/overlays/etcdme-nbg1-dc3
       - gateway-path=argocd/overlays/etcdme-nbg1-dc3/resources/gateway
       - routes-path=argocd/overlays/etcdme-nbg1-dc3/resources/routes
-      - filestash-path=argocd/overlays/etcdme-nbg1-dc3/resources/filestash
 
 # Repository configuration - replace placeholders only in apps that use them
 replacements:
@@ -58,11 +55,6 @@ replacements:
           name: playwright-mcp
         fieldPaths:
           - spec.source.repoURL
-      - select:
-          kind: Application
-          name: filestash
-        fieldPaths:
-          - spec.source.repoURL
   - source:
       kind: ConfigMap
       name: cluster-config
@@ -91,16 +83,6 @@ replacements:
       - select:
           kind: Application
           name: argocd-routes
-        fieldPaths:
-          - spec.source.path
-  - source:
-      kind: ConfigMap
-      name: cluster-config
-      fieldPath: data.filestash-path
-    targets:
-      - select:
-          kind: Application
-          name: filestash
         fieldPaths:
           - spec.source.path
 
@@ -136,4 +118,3 @@ patches:
   - path: n8n-route.yaml
   - path: uptime-kuma-route.yaml
   - path: landing-app.yaml
-  - path: filestash-oauth2-proxy-app.yaml
