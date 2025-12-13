@@ -64,6 +64,7 @@ jobs:
           severity: HIGH,CRITICAL
           format: table
           exit-code: '0'
+          trivyignores: .trivyignore
 
   validate:
     name: Validate Manifests
