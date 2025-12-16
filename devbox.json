@@ -31,7 +31,7 @@
   },
   "shell": {
     "init_hook": [
-      "[ -f .env ] && set -a && source .env && set +a || true",
+      "test -f \"$PWD/.env\" && { set -a; . \"$PWD/.env\"; set +a; } || true",
       "echo 'Loaded DevBox env for Homelab'"
     ],
     "scripts": {
