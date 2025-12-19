@@ -214,6 +214,7 @@ else
   UPTIME_KUMA_COOKIE_SECRET=$(gen_password)
   UPTIME_KUMA_ADMIN_PASSWORD=$(gen_password)
   PLAYWRIGHT_MCP_TOKEN=$(gen_password)
+  N8N_MCP_TOKEN=$(gen_password)
   FILESTASH_CLIENT_SECRET=$(gen_password)
   FILESTASH_SECRET_KEY=$(gen_password)
   FILESTASH_ADMIN_PASSWORD=$(gen_password)
@@ -231,6 +232,7 @@ else
   echo "  - Uptime Kuma cookie secret"
   echo "  - Uptime Kuma admin password"
   echo "  - Playwright MCP token"
+  echo "  - n8n MCP token"
   echo "  - Filestash client secret"
   echo "  - Filestash secret key"
   echo "  - Filestash admin password"
@@ -280,6 +282,9 @@ else
 
   # Playwright MCP token
   sed -i "s|token: REPLACE_PLAYWRIGHT_MCP_TOKEN|token: ${PLAYWRIGHT_MCP_TOKEN}|" "$SECRETS_FILE"
+
+  # n8n MCP token
+  sed -i "s|token: REPLACE_N8N_MCP_TOKEN|token: ${N8N_MCP_TOKEN}|" "$SECRETS_FILE"
 
   # Filestash secrets
   sed -i "s|client-secret: REPLACE_FILESTASH_CLIENT_SECRET|client-secret: ${FILESTASH_CLIENT_SECRET}|g" "$SECRETS_FILE"
