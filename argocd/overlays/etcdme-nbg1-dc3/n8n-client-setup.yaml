@@ -47,7 +47,7 @@ spec:
                   --server http://keycloak-service.keycloak.svc.cluster.local:8080 \
                   --realm master \
                   --user "$KEYCLOAK_ADMIN" \
-                  --password "$KEYCLOAK_ADMIN_PASSWORD" 2>/dev/null; then
+                  --password "$KEYCLOAK_ADMIN_PASSWORD"; then
                   echo "Logged in to Keycloak"
                   break
                 fi
