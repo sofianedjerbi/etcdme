@@ -27,7 +27,7 @@ spec:
             - name: tmp
               mountPath: /tmp
             - name: kcadm-config
-              mountPath: /opt/keycloak/bin/.kcadm
+              mountPath: /opt/keycloak/.keycloak
           resources:
             requests:
               cpu: 50m
