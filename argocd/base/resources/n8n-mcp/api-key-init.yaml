@@ -1,0 +1,213 @@
+# Job to create n8n API key for MCP server
+# Runs in n8n namespace (where secrets are) with cross-namespace access to n8n-mcp
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: n8n-api-key-init
+  namespace: n8n
+---
+# ClusterRole to manage n8n-mcp secrets and deployments
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: n8n-mcp-manager
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: n8n-api-key-init-mcp
+  namespace: n8n-mcp
+subjects:
+  - kind: ServiceAccount
+    name: n8n-api-key-init
+    namespace: n8n
+roleRef:
+  kind: ClusterRole
+  name: n8n-mcp-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: n8n-api-key-init
+  namespace: n8n
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: n8n-api-key-init
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: init-api-key
+          image: governmentpaas/psql:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          env:
+            - name: PGHOST
+              value: "postgres-rw.postgres.svc.cluster.local"
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: "n8n"
+            - name: PGUSER
+              value: "n8n"
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-postgres
+                  key: postgres-password
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-encryption
+                  key: N8N_ENCRYPTION_KEY
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "=== n8n API Key Init ==="
+
+              # Wait for database
+              echo "Waiting for postgres..."
+              until pg_isready -h $PGHOST -U $PGUSER; do sleep 2; done
+
+              # Check if key already exists
+              EXISTING=$(psql -h $PGHOST -U $PGUSER -d $PGDATABASE -t -c \
+                "SELECT COUNT(*) FROM user_api_keys WHERE label = 'MCP Server (auto)'" | tr -d ' ')
+
+              if [ "$EXISTING" -gt "0" ]; then
+                echo "API key already exists in database"
+                # Get existing key for secret update
+                API_KEY=$(psql -h $PGHOST -U $PGUSER -d $PGDATABASE -t -c \
+                  "SELECT \"apiKey\" FROM user_api_keys WHERE label = 'MCP Server (auto)'" | tr -d ' \n')
+              else
+                echo "Waiting for n8n user..."
+                for i in $(seq 1 30); do
+                  USER_ID=$(psql -h $PGHOST -U $PGUSER -d $PGDATABASE -t -c \
+                    "SELECT id FROM public.user LIMIT 1" 2>/dev/null | tr -d ' \n')
+                  [ -n "$USER_ID" ] && break
+                  echo "  attempt $i/30..."
+                  sleep 10
+                done
+
+                if [ -z "$USER_ID" ]; then
+                  echo "ERROR: No n8n user found"
+                  exit 1
+                fi
+                echo "Found user: $USER_ID"
+
+                # Generate UUID for jti
+                JTI=$(cat /proc/sys/kernel/random/uuid)
+                IAT=$(date +%s)
+
+                # JWT header and payload
+                HEADER='{"alg":"HS256","typ":"JWT"}'
+                PAYLOAD="{\"sub\":\"$USER_ID\",\"iss\":\"n8n\",\"aud\":\"public-api\",\"jti\":\"$JTI\",\"iat\":$IAT}"
+
+                # Base64url encode (no padding, URL-safe)
+                HEADER_B64=$(printf '%s' "$HEADER" | base64 | tr '+/' '-_' | tr -d '=\n')
+                PAYLOAD_B64=$(printf '%s' "$PAYLOAD" | base64 | tr '+/' '-_' | tr -d '=\n')
+
+                # HMAC-SHA256 signature
+                SIGNATURE=$(printf '%s.%s' "$HEADER_B64" "$PAYLOAD_B64" | \
+                  openssl dgst -sha256 -hmac "$N8N_ENCRYPTION_KEY" -binary | \
+                  base64 | tr '+/' '-_' | tr -d '=\n')
+
+                API_KEY="${HEADER_B64}.${PAYLOAD_B64}.${SIGNATURE}"
+
+                echo "Generated API key: ${API_KEY:0:50}..."
+
+                # Insert into database
+                psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c \
+                  "INSERT INTO user_api_keys (id, \"userId\", label, \"apiKey\", scopes, audience)
+                   VALUES ('$JTI', '$USER_ID', 'MCP Server (auto)', '$API_KEY', '[]', 'public-api')
+                   ON CONFLICT (\"userId\", label) DO UPDATE SET \"apiKey\" = EXCLUDED.\"apiKey\", \"updatedAt\" = NOW()"
+
+                echo "API key stored in database"
+              fi
+
+              # Write key to shared volume for kubectl container
+              echo -n "$API_KEY" > /shared/api-key
+              echo "API key ready for secret update"
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+        # Sidecar to update Kubernetes secret (runs after main container via shared volume)
+        - name: update-secret
+          image: bitnami/kubectl:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Waiting for API key..."
+              for i in $(seq 1 60); do
+                [ -f /shared/api-key ] && break
+                sleep 2
+              done
+
+              if [ ! -f /shared/api-key ]; then
+                echo "ERROR: API key not found"
+                exit 1
+              fi
+
+              API_KEY=$(cat /shared/api-key)
+              API_KEY_B64=$(echo -n "$API_KEY" | base64 -w0)
+
+              echo "Updating n8n-mcp-auth secret..."
+              kubectl patch secret n8n-mcp-auth -n n8n-mcp --type='json' \
+                -p="[{\"op\": \"replace\", \"path\": \"/data/n8n-api-key\", \"value\": \"$API_KEY_B64\"}]"
+
+              echo "Restarting n8n-mcp deployment..."
+              kubectl rollout restart deployment/n8n-mcp -n n8n-mcp || true
+
+              echo "Done!"
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+              readOnly: true
+      volumes:
+        - name: shared
+          emptyDir: {}
