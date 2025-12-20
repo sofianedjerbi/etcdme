@@ -82,6 +82,15 @@ spec:
               value: "3000"
             - name: LOG_LEVEL
               value: "info"
+            # Relax rate limiting for MCP operations (internal use)
+            - name: RATE_LIMIT_WINDOW_MS
+              value: "60000"
+            - name: RATE_LIMIT_MAX
+              value: "1000"
+            - name: AUTH_RATE_LIMIT_WINDOW_MS
+              value: "60000"
+            - name: AUTH_RATE_LIMIT_MAX
+              value: "1000"
             # Auth token for MCP protocol authentication
             - name: AUTH_TOKEN
               valueFrom:
