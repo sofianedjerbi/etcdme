@@ -91,6 +91,15 @@ spec:
               value: "60000"
             - name: AUTH_RATE_LIMIT_MAX
               value: "1000"
+            # Session management - extend timeout to 24 hours
+            - name: SESSION_TIMEOUT_MS
+              value: "86400000"
+            - name: SESSION_TTL_MS
+              value: "86400000"
+            - name: SESSION_EXPIRY_MS
+              value: "86400000"
+            - name: STATELESS_HTTP
+              value: "false"
             # Auth token for MCP protocol authentication
             - name: AUTH_TOKEN
               valueFrom:
