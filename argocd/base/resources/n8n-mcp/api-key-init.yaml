@@ -130,6 +130,17 @@ spec:
                 JTI=$(cat /proc/sys/kernel/random/uuid)
                 IAT=$(date +%s)
 
+                # Derive JWT secret from encryption key (n8n's algorithm):
+                # 1. Take every other character from encryption key
+                # 2. SHA-256 hash the result
+                DERIVED=""
+                i=0
+                while [ $i -lt ${#N8N_ENCRYPTION_KEY} ]; do
+                  DERIVED="${DERIVED}$(echo "$N8N_ENCRYPTION_KEY" | cut -c$((i+1)))"
+                  i=$((i+2))
+                done
+                JWT_SECRET=$(printf '%s' "$DERIVED" | openssl dgst -sha256 | awk '{print $2}')
+
                 # JWT header and payload
                 HEADER='{"alg":"HS256","typ":"JWT"}'
                 PAYLOAD="{\"sub\":\"$USER_ID\",\"iss\":\"n8n\",\"aud\":\"public-api\",\"jti\":\"$JTI\",\"iat\":$IAT}"
@@ -138,9 +149,9 @@ spec:
                 HEADER_B64=$(printf '%s' "$HEADER" | base64 | tr '+/' '-_' | tr -d '=\n')
                 PAYLOAD_B64=$(printf '%s' "$PAYLOAD" | base64 | tr '+/' '-_' | tr -d '=\n')
 
-                # HMAC-SHA256 signature
+                # HMAC-SHA256 signature using derived JWT secret
                 SIGNATURE=$(printf '%s.%s' "$HEADER_B64" "$PAYLOAD_B64" | \
-                  openssl dgst -sha256 -hmac "$N8N_ENCRYPTION_KEY" -binary | \
+                  openssl dgst -sha256 -hmac "$JWT_SECRET" -binary | \
                   base64 | tr '+/' '-_' | tr -d '=\n')
 
                 API_KEY="${HEADER_B64}.${PAYLOAD_B64}.${SIGNATURE}"
