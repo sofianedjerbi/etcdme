@@ -55,6 +55,6 @@ spec:
         maxParallel: 2
       data:
         compression: gzip
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
   # Secret postgres-credentials is defined in overlay secrets.sops.yaml
   # Secret s3-backup-credentials is defined in overlay secrets.sops.yaml
