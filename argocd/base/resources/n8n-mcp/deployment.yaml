@@ -82,11 +82,21 @@ spec:
               value: "3000"
             - name: LOG_LEVEL
               value: "info"
+            # Auth token for MCP protocol authentication
             - name: AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: n8n-mcp-auth
                   key: token
+            # n8n API credentials for workflow management (create/update/execute)
+            - name: N8N_API_URL
+              value: "https://n8n.etcd.me"
+            - name: N8N_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-mcp-auth
+                  key: n8n-api-key
+                  optional: true
           resources:
             requests:
               cpu: 50m
