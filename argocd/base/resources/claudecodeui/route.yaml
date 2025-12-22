@@ -1,0 +1,44 @@
+# Claude Code UI HTTPRoute - routes through oauth2-proxy for authentication
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: claudecodeui-route
+  namespace: claudecodeui
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  parentRefs:
+    - name: main-gateway
+      namespace: default
+      sectionName: https
+  hostnames:
+    - claude.cluster.local
+  rules:
+    # Health check endpoint - bypasses oauth2-proxy
+    - matches:
+        - path:
+            type: Exact
+            value: /api/health
+      backendRefs:
+        - name: claudecodeui
+          port: 3001
+    # SSO logout redirect
+    - matches:
+        - path:
+            type: Exact
+            value: /signout
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /oauth2/sign_out
+            statusCode: 302
+    # All other requests go to oauth2-proxy
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: claudecodeui-oauth2-proxy
+          port: 4180

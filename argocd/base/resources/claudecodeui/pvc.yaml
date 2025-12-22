@@ -1,0 +1,29 @@
+# Claude Code UI persistent storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claudecodeui-data
+  namespace: claudecodeui
+  labels:
+    app.kubernetes.io/name: claudecodeui
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claudecodeui-claude
+  namespace: claudecodeui
+  labels:
+    app.kubernetes.io/name: claudecodeui
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

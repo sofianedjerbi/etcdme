@@ -1,0 +1,17 @@
+# Claude Code UI service
+apiVersion: v1
+kind: Service
+metadata:
+  name: claudecodeui
+  namespace: claudecodeui
+  labels:
+    app.kubernetes.io/name: claudecodeui
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: claudecodeui
