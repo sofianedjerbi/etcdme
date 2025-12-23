@@ -171,6 +171,9 @@ EOF
               REPLACE_UPTIME_KUMA_CLIENT_SECRET)
                 existing_value=$(grep -A1 "name: uptime-kuma-client-secret" "$SECRETS_FILE" | grep "client-secret:" | sed 's/.*client-secret: //' | head -1)
                 ;;
+              REPLACE_CLAUDECODEUI_CLIENT_SECRET)
+                existing_value=$(grep -A1 "name: claudecodeui-client-secret" "$SECRETS_FILE" | grep "client-secret:" | sed 's/.*client-secret: //' | head -1)
+                ;;
             esac
 
             if [[ -n "$existing_value" && "$existing_value" != "REPLACE_"* ]]; then
@@ -219,6 +222,8 @@ else
   FILESTASH_SECRET_KEY=$(gen_password)
   FILESTASH_ADMIN_PASSWORD=$(gen_password)
   FILESTASH_COOKIE_SECRET=$(gen_password)
+  CLAUDECODEUI_CLIENT_SECRET=$(gen_password)
+  CLAUDECODEUI_COOKIE_SECRET=$(gen_password)
 
   echo "Generated passwords:"
   echo "  - Keycloak DB password"
@@ -237,6 +242,8 @@ else
   echo "  - Filestash secret key"
   echo "  - Filestash admin password"
   echo "  - Filestash cookie secret"
+  echo "  - Claude Code UI client secret"
+  echo "  - Claude Code UI cookie secret"
   echo ""
 
   # Copy example and replace values
@@ -301,6 +308,16 @@ else
     sed -i "s|s3-bucket: REPLACE_FILESTASH_S3_BUCKET|s3-bucket: ${FILESTASH_S3_BUCKET}|" "$SECRETS_FILE"
     sed -i "s|s3-region: REPLACE_FILESTASH_S3_REGION|s3-region: ${FILESTASH_S3_REGION:-us-east-1}|" "$SECRETS_FILE"
     echo "  - Filestash S3 backend"
+  fi
+
+  # Claude Code UI secrets
+  sed -i "s|client-secret: REPLACE_CLAUDECODEUI_CLIENT_SECRET|client-secret: ${CLAUDECODEUI_CLIENT_SECRET}|g" "$SECRETS_FILE"
+  sed -i "s|cookie-secret: REPLACE_CLAUDECODEUI_COOKIE_SECRET|cookie-secret: ${CLAUDECODEUI_COOKIE_SECRET}|" "$SECRETS_FILE"
+
+  # Anthropic API key (optional - from .env)
+  if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+    sed -i "s|anthropic-api-key: REPLACE_ANTHROPIC_API_KEY|anthropic-api-key: ${ANTHROPIC_API_KEY}|" "$SECRETS_FILE"
+    echo "  - Anthropic API key"
   fi
 fi
 
