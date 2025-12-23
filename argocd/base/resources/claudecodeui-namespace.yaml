@@ -1,0 +1,9 @@
+# Claude Code UI namespace - created by root-app before secrets
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: claudecodeui
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: claudecodeui

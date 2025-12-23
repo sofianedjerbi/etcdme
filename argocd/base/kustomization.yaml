@@ -56,5 +56,7 @@ resources:
   - resources/n8n/route.yaml
   # Uptime Kuma resources
   - resources/uptime-kuma/route.yaml
+  # Claude Code UI namespace (before secrets)
+  - resources/claudecodeui-namespace.yaml
   # All secrets are in overlay secrets.sops.yaml
   # NOTE: gateway, postgres/cluster, and routes are managed by child apps

@@ -51,5 +51,4 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+    # Note: namespace is created by root-app before this app syncs
