@@ -6,6 +6,9 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "5"
+    # Image updater: auto-update when new images are pushed
+    argocd-image-updater.argoproj.io/image-list: claudecodeui=ghcr.io/sofianedjerbi/claudecodeui:latest
+    argocd-image-updater.argoproj.io/claudecodeui.update-strategy: digest
 spec:
   project: default
   source:
