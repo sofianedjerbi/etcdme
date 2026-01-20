@@ -14,4 +14,4 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: cilium-gateway
+              kubernetes.io/metadata.name: kube-system
