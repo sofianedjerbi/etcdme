@@ -18,6 +18,16 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # Allow Keycloak for OIDC authentication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
     # Allow access to Kubernetes API server
     - to:
         - ipBlock:
@@ -27,11 +37,13 @@ spec:
           port: 443
         - protocol: TCP
           port: 6443
-    # Allow HTTPS for Git repos
+    # Allow HTTP/HTTPS for Git repos and external services
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
       ports:
+        - protocol: TCP
+          port: 80
         - protocol: TCP
           port: 443
     # Allow SSH for Git repos
