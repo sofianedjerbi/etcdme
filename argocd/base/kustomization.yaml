@@ -38,16 +38,9 @@ resources:
   - apps/uptime-kuma/uptime-kuma.yaml
   # Landing page
   - apps/landing/landing.yaml
-  # Playwright MCP server
-  - apps/playwright-mcp/playwright-mcp.yaml
-  - apps/playwright-mcp/netpol-playwright-mcp.yaml
   # n8n MCP server
   - apps/n8n-mcp/n8n-mcp.yaml
   - apps/n8n-mcp/netpol-n8n-mcp.yaml
-  # Claude Code UI
-  - apps/claudecodeui/claudecodeui.yaml
-  - apps/claudecodeui/oauth2-proxy.yaml
-  - apps/claudecodeui/netpol-claudecodeui.yaml
   # Resources (only those NOT managed by child apps)
   - resources/cert-manager/cluster-issuer.yaml
   # Keycloak via operator CRDs (no child app for these)
@@ -65,7 +58,5 @@ resources:
   - resources/n8n/route.yaml
   # Uptime Kuma resources
   - resources/uptime-kuma/route.yaml
-  # Claude Code UI namespace (before secrets)
-  - resources/claudecodeui-namespace.yaml
   # All secrets are in overlay secrets.sops.yaml
   # NOTE: gateway, postgres/cluster, and routes are managed by child apps

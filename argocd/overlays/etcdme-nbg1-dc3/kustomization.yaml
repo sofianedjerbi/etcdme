@@ -5,10 +5,7 @@ kind: Kustomization
 resources:
   - ../../base
   - n8n-client-setup.yaml
-  - playwright-mcp-route.yaml
   - n8n-mcp-route.yaml
-  - claudecodeui-route.yaml
-  - claudecodeui-client-setup.yaml
 
 # KSOPS generator for SOPS-encrypted secrets
 # ArgoCD decrypts via KSOPS plugin, kubectl skips this
@@ -55,17 +52,7 @@ replacements:
           - spec.source.repoURL
       - select:
           kind: Application
-          name: playwright-mcp
-        fieldPaths:
-          - spec.source.repoURL
-      - select:
-          kind: Application
           name: n8n-mcp
-        fieldPaths:
-          - spec.source.repoURL
-      - select:
-          kind: Application
-          name: claudecodeui
         fieldPaths:
           - spec.source.repoURL
       - select:
@@ -95,17 +82,7 @@ replacements:
           - spec.source.repoURL
       - select:
           kind: Application
-          name: netpol-playwright-mcp
-        fieldPaths:
-          - spec.source.repoURL
-      - select:
-          kind: Application
           name: netpol-n8n-mcp
-        fieldPaths:
-          - spec.source.repoURL
-      - select:
-          kind: Application
-          name: netpol-claudecodeui
         fieldPaths:
           - spec.source.repoURL
   - source:
@@ -171,4 +148,3 @@ patches:
   - path: n8n-route.yaml
   - path: uptime-kuma-route.yaml
   - path: landing-app.yaml
-  - path: claudecodeui-oauth2-proxy-app.yaml

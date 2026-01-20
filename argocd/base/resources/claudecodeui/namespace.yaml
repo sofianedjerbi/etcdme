@@ -1,7 +1,0 @@
-# Claude Code UI namespace
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: claudecodeui
-  labels:
-    app.kubernetes.io/name: claudecodeui
