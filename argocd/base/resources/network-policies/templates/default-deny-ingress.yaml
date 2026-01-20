@@ -1,0 +1,12 @@
+# Template: Default Deny Ingress
+# Copy this file and replace NAMESPACE_NAME with your namespace
+# This policy denies all ingress traffic by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: NAMESPACE_NAME
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress

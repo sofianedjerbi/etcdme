@@ -15,14 +15,34 @@ spec:
           enabled: false
         prometheus-pushgateway:
           enabled: false
+        # Kube-state-metrics with security hardening
         kube-state-metrics:
           enabled: true
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+        # Node exporter requires host access - cannot be fully restricted
         prometheus-node-exporter:
           enabled: true
+        # Prometheus server with security hardening
         server:
           persistentVolume:
             enabled: false  # Enable later with Longhorn
           retention: "7d"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

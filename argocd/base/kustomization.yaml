@@ -23,22 +23,31 @@ resources:
   - apps/infrastructure/postgres-cluster.yaml
   - apps/infrastructure/reloader.yaml
   - apps/infrastructure/argocd-image-updater.yaml
+  - apps/infrastructure/kyverno.yaml
+  - apps/infrastructure/kyverno-policies.yaml
+  - apps/infrastructure/netpol-argocd.yaml
+  - apps/infrastructure/netpol-keycloak.yaml
   - apps/monitoring/loki-stack.yaml
   - apps/monitoring/prometheus.yaml
+  - apps/monitoring/netpol-monitoring.yaml
   # n8n apps
   - apps/n8n/n8n.yaml
   - apps/n8n/oauth2-proxy.yaml
+  - apps/n8n/netpol-n8n.yaml
   # Uptime Kuma
   - apps/uptime-kuma/uptime-kuma.yaml
   # Landing page
   - apps/landing/landing.yaml
   # Playwright MCP server
   - apps/playwright-mcp/playwright-mcp.yaml
+  - apps/playwright-mcp/netpol-playwright-mcp.yaml
   # n8n MCP server
   - apps/n8n-mcp/n8n-mcp.yaml
+  - apps/n8n-mcp/netpol-n8n-mcp.yaml
   # Claude Code UI
   - apps/claudecodeui/claudecodeui.yaml
   - apps/claudecodeui/oauth2-proxy.yaml
+  - apps/claudecodeui/netpol-claudecodeui.yaml
   # Resources (only those NOT managed by child apps)
   - resources/cert-manager/cluster-issuer.yaml
   # Keycloak via operator CRDs (no child app for these)

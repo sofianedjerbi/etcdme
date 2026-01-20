@@ -23,6 +23,8 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: claudecodeui
           image: ghcr.io/sofianedjerbi/claudecodeui:latest
@@ -73,6 +75,10 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
       volumes:
         - name: data
           persistentVolumeClaim:

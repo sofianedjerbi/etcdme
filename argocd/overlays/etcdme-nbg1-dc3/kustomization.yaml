@@ -68,6 +68,46 @@ replacements:
           name: claudecodeui
         fieldPaths:
           - spec.source.repoURL
+      - select:
+          kind: Application
+          name: kyverno-policies
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-argocd
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-keycloak
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-monitoring
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-n8n
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-playwright-mcp
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-n8n-mcp
+        fieldPaths:
+          - spec.source.repoURL
+      - select:
+          kind: Application
+          name: netpol-claudecodeui
+        fieldPaths:
+          - spec.source.repoURL
   - source:
       kind: ConfigMap
       name: cluster-config

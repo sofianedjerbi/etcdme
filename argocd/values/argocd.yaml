@@ -1,6 +1,67 @@
 # ArgoCD Helm values
 # KSOPS integration for SOPS-encrypted secrets
 
+# Global security context for all components
+global:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+# Controller security hardening
+controller:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Server security hardening
+server:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Application Set Controller security hardening
+applicationSet:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Notifications Controller security hardening
+notifications:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Redis security hardening
+redis:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# Dex security hardening
+dex:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
 configs:
   secret:
     createSecret: false
@@ -20,6 +81,13 @@ configs:
         lockRepo: false
 
 repoServer:
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
   volumes:
     - name: custom-tools
       emptyDir: {}
@@ -41,6 +109,13 @@ repoServer:
         - |
           cp /usr/local/bin/ksops /custom-tools/ksops
           cp /usr/local/bin/kustomize /custom-tools/kustomize
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
       volumeMounts:
         - name: custom-tools
           mountPath: /custom-tools
@@ -60,6 +135,11 @@ repoServer:
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
       volumeMounts:
         - name: var-files
           mountPath: /var/run/argocd

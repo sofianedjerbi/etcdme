@@ -7,3 +7,6 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
   labels:
     app.kubernetes.io/name: claudecodeui
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
