@@ -3,6 +3,7 @@ kind: Namespace
 metadata:
   name: playwright-mcp
   labels:
-    pod-security.kubernetes.io/enforce: restricted
+    # baseline required: openresty/nginx images run as root
+    pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted

@@ -18,22 +18,16 @@ spec:
         app: playwright-mcp
     spec:
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       containers:
         # Auth proxy sidecar - validates Bearer token before proxying
+        # Note: openresty image runs as root, requires baseline PSS
         - name: auth-proxy
           image: openresty/openresty:alpine
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
             capabilities:
               drop: ["ALL"]
           volumeMounts:
@@ -97,9 +91,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
             capabilities:
               drop: ["ALL"]
           volumeMounts:

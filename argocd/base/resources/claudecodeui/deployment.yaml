@@ -72,7 +72,7 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
           securityContext:
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false  # vite build needs to write temp files
             runAsNonRoot: true
             runAsUser: 1000
             allowPrivilegeEscalation: false
