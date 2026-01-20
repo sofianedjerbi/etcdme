@@ -60,6 +60,9 @@ spec:
         - name: init-api-key
           image: governmentpaas/psql:latest
           securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
