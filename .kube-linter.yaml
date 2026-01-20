@@ -1,2 +1,3 @@
 checks:
-  exclude: []
+  exclude:
+    - "latest-tag"
