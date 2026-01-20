@@ -6,3 +6,4 @@ resources:
   - allow-gateway-ingress.yaml
   - allow-internal.yaml
   - allow-egress.yaml
+  - allow-health-probes.yaml

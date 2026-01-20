@@ -8,6 +8,19 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # Allow internal monitoring namespace traffic
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+    # Allow Kubernetes API (service in default namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+      ports:
+        - protocol: TCP
+          port: 443
     # Allow DNS
     - to:
         - namespaceSelector:

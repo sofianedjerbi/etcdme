@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-health-probes
+  namespace: monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow kubelet health probes from any source
+    # kube-state-metrics: 8080, 8081
+    # grafana: 3000
+    # prometheus: 9090
+    # loki: 3100
+    # promtail: 3101
+    - ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 3100
+        - protocol: TCP
+          port: 3101
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 9100

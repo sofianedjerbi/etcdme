@@ -8,3 +8,4 @@ resources:
   - allow-mcp-ingress.yaml
   - allow-egress.yaml
   - allow-prometheus-scrape.yaml
+  - allow-health-probes.yaml
