@@ -8,6 +8,11 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # Allow internal n8n namespace traffic (n8n main <-> oauth2-proxy)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: n8n
     # Allow DNS
     - to:
         - namespaceSelector:

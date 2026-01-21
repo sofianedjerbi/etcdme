@@ -8,6 +8,11 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # Allow internal n8n-mcp namespace traffic
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: n8n-mcp
     # Allow DNS
     - to:
         - namespaceSelector:

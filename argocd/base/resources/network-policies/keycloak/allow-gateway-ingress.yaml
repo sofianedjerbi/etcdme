@@ -1,21 +1,20 @@
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
+# CiliumNetworkPolicy to allow traffic from Cilium Gateway API
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
 metadata:
   name: allow-gateway-ingress
   namespace: keycloak
 spec:
-  podSelector:
+  endpointSelector:
     matchLabels:
       app: keycloak
-  policyTypes:
-    - Ingress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - protocol: TCP
-          port: 8080
-        - protocol: TCP
-          port: 8443
+    # Allow Cilium Gateway API traffic (uses reserved:ingress identity)
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+            - port: "8443"
+              protocol: TCP

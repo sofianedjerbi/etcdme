@@ -7,3 +7,4 @@ resources:
   - allow-internal.yaml
   - allow-egress.yaml
   - allow-prometheus-scrape.yaml
+  - allow-health-probes.yaml

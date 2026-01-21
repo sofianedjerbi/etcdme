@@ -8,6 +8,11 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # Allow internal keycloak namespace traffic
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
     # Allow DNS
     - to:
         - namespaceSelector:

@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-health-probes
+  namespace: argocd
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow kubelet health probes from any source
+    # ArgoCD components use various ports:
+    # - server: 8080, 8083
+    # - repo-server: 8081
+    # - application-controller: 8082
+    # - redis: 6379
+    # - dex: 5556, 5557
+    # - notifications: 9001
+    - ports:
+        - protocol: TCP
+          port: 5556
+        - protocol: TCP
+          port: 5557
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+        - protocol: TCP
+          port: 8082
+        - protocol: TCP
+          port: 8083
+        - protocol: TCP
+          port: 9001

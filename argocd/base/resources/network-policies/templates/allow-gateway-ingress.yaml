@@ -1,17 +1,21 @@
 # Template: Allow Cilium Gateway Ingress
 # Copy this file and replace NAMESPACE_NAME with your namespace
-# This policy allows ingress from Cilium Gateway for HTTP/HTTPS traffic
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
+# Add the ports your application uses
+#
+# CiliumNetworkPolicy is used because Cilium Gateway API uses the
+# reserved:ingress identity for traffic routing.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
 metadata:
   name: allow-gateway-ingress
   namespace: NAMESPACE_NAME
 spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
+  endpointSelector: {}
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
+    # Allow Cilium Gateway API traffic (uses reserved:ingress identity)
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
